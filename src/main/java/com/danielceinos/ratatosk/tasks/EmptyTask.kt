@@ -10,78 +10,79 @@ package com.danielceinos.ratatosk.tasks
 @Suppress("UndocumentedPublicFunction", "UndocumentedPublicClass")
 sealed class EmptyDataTask {
 
-    fun isRunning() = this is Running
+  fun isRunning() = this is Running
 
-    fun isFailure() = this is Error
+  fun isFailure() = this is Error
 
-    fun isTerminal(): Boolean = this is Success || this is Error
+  fun isTerminal(): Boolean = this is Success || this is Error
 
-    fun isSuccessful() = this is Success
+  fun isSuccessful() = this is Success
 
-    fun isIdle() = this is Idle
+  fun isIdle() = this is Idle
 
-    class Idle : EmptyDataTask() {
-        companion object {
-            fun emptyDataTaskIdle(): EmptyDataTask = Idle()
-        }
+  class Idle : EmptyDataTask() {
+    companion object {
+      fun emptyDataTaskIdle(): EmptyDataTask = Idle()
     }
+  }
 
-    class Running : EmptyDataTask() {
-        companion object {
-            fun emptyDataTaskRunning(value: Int = -1): EmptyDataTask = Running()
-        }
+  class Running : EmptyDataTask() {
+    companion object {
+      fun emptyDataTaskRunning(value: Int = -1): EmptyDataTask = Running()
     }
+  }
 
-    class Success : EmptyDataTask() {
-        companion object {
-            fun emptyDataTaskSuccess(): EmptyDataTask = Success()
-        }
+  class Success : EmptyDataTask() {
+    companion object {
+      fun emptyDataTaskSuccess(): EmptyDataTask = Success()
     }
+  }
 
-    data class Error(val throwable: Throwable) : EmptyDataTask() {
-        companion object {
-            fun emptyDataTaskError(throwable: Throwable): EmptyDataTask = Error(throwable)
-        }
+  data class Error(val throwable: Throwable) : EmptyDataTask() {
+    companion object {
+      fun emptyDataTaskError(throwable: Throwable): EmptyDataTask = Error(throwable)
     }
+  }
 
-    override fun toString(): String {
-        return when (this) {
-            is Success -> "Success[]"
-            is Error -> "Error[exception=$throwable]"
-            is Idle -> "Idle[]"
-            is Running -> "Running[]"
-        }
+  override fun toString(): String {
+    return when (this) {
+      is Success -> "Success[]"
+      is Error -> "Error[exception=$throwable]"
+      is Idle -> "Idle[]"
+      is Running -> "Running[]"
     }
+  }
 }
 
 //Utilities for  data task collections
 
 /** Find the first failed task or throw an exception. */
 fun Iterable<EmptyDataTask>.firstFailure(): EmptyDataTask.Error {
-    return this.first { it is EmptyDataTask.Error } as EmptyDataTask.Error
+  return this.first { it is EmptyDataTask.Error } as EmptyDataTask.Error
 }
 
 /** Find the first failed task or null. */
 fun Iterable<EmptyDataTask>.firstFailureOrNull(): EmptyDataTask.Error? {
-    return this.firstOrNull { it is EmptyDataTask.Error }?.let { it as EmptyDataTask.Error }
+  return this.firstOrNull { it is EmptyDataTask.Error }
+      ?.let { it as EmptyDataTask.Error }
 }
 
 /** All task are in terminal state. */
 fun Iterable<EmptyDataTask>.allCompleted(): Boolean {
-    return this.all { it.isTerminal() }
+  return this.all { it.isTerminal() }
 }
 
 /** All tasks succeeded. */
 fun Iterable<EmptyDataTask>.allSuccessful(): Boolean {
-    return this.all { it.isSuccessful() }
+  return this.all { it.isSuccessful() }
 }
 
 /** Any tasks failed. */
 fun Iterable<EmptyDataTask>.anyFailure(): Boolean {
-    return this.any { it.isFailure() }
+  return this.any { it.isFailure() }
 }
 
 /** Any task is running. */
 fun Iterable<EmptyDataTask>.anyRunning(): Boolean {
-    return this.any { it.isRunning() }
+  return this.any { it.isRunning() }
 }

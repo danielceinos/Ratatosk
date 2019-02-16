@@ -1,8 +1,12 @@
 package com.danielceinos.ratatosk.extensions
 
-import com.danielceinos.nearbyconnect.core.tasks.*
-import com.danielceinos.nearbyconnect.core.tasks.DataTask.Error.Companion.dataTaskError
-import com.danielceinos.ratatosk.tasks.*
+import com.danielceinos.ratatosk.tasks.DataTask
+import com.danielceinos.ratatosk.tasks.DataTask.Error.Companion.dataTaskError
+import com.danielceinos.ratatosk.tasks.EmptyDataTask
+import com.danielceinos.ratatosk.tasks.allSuccessful
+import com.danielceinos.ratatosk.tasks.anyFailure
+import com.danielceinos.ratatosk.tasks.anyRunning
+import com.danielceinos.ratatosk.tasks.firstFailure
 import io.reactivex.disposables.Disposable
 import mini.Store
 import mini.select
@@ -17,22 +21,24 @@ import mini.select
  *
  * Returns a [Disposable]
  */
-inline fun <S : Any, K : Any> Store<S>.renderTask(crossinline dataTask: (S) -> DataTask<K>?,
-                                                  crossinline onIdle: () -> Unit,
-                                                  crossinline onProgress: () -> Unit,
-                                                  crossinline onSuccess: (K) -> Unit,
-                                                  crossinline onError: (Throwable) -> Unit): Disposable {
+inline fun <S : Any, K : Any> Store<S>.renderTask(
+  crossinline dataTask: (S) -> DataTask<K>?,
+  crossinline onIdle: () -> Unit,
+  crossinline onProgress: () -> Unit,
+  crossinline onSuccess: (K) -> Unit,
+  crossinline onError: (Throwable) -> Unit
+): Disposable {
 
-    return flowable()
-            .select(dataTask, dataTaskError(Error("task not found")))
-            .subscribe {
-                when (it) {
-                    is DataTask.Idle -> onIdle()
-                    is DataTask.Running -> onProgress()
-                    is DataTask.Success -> onSuccess(it.data)
-                    is DataTask.Error -> onError(it.throwable)
-                }
-            }
+  return flowable()
+      .select(dataTask, dataTaskError(Error("task not found")))
+      .subscribe {
+        when (it) {
+          is DataTask.Idle -> onIdle()
+          is DataTask.Running -> onProgress()
+          is DataTask.Success -> onSuccess(it.data)
+          is DataTask.Error -> onError(it.throwable)
+        }
+      }
 }
 
 /**
@@ -45,19 +51,21 @@ inline fun <S : Any, K : Any> Store<S>.renderTask(crossinline dataTask: (S) -> D
  *
  * Returns a [Disposable]
  */
-inline fun <S : Any, K : Any> Store<S>.renderTaskList(crossinline dataTasks: (S) -> Iterable<DataTask<K>>,
-                                                      crossinline onProgress: () -> Unit,
-                                                      crossinline onSuccess: (Iterable<DataTask<K>>) -> Unit,
-                                                      crossinline onError: (Throwable) -> Unit): Disposable {
-    return flowable()
-            .select(dataTasks)
-            .subscribe {
-                when {
-                    it.allSuccessful() -> onSuccess(it)
-                    it.anyFailure() -> onError(it.firstFailure().throwable)
-                    it.anyRunning() -> onProgress()
-                }
-            }
+inline fun <S : Any, K : Any> Store<S>.renderTaskList(
+  crossinline dataTasks: (S) -> Iterable<DataTask<K>>,
+  crossinline onProgress: () -> Unit,
+  crossinline onSuccess: (Iterable<DataTask<K>>) -> Unit,
+  crossinline onError: (Throwable) -> Unit
+): Disposable {
+  return flowable()
+      .select(dataTasks)
+      .subscribe {
+        when {
+          it.allSuccessful() -> onSuccess(it)
+          it.anyFailure() -> onError(it.firstFailure().throwable)
+          it.anyRunning() -> onProgress()
+        }
+      }
 }
 
 /**
@@ -70,21 +78,23 @@ inline fun <S : Any, K : Any> Store<S>.renderTaskList(crossinline dataTasks: (S)
  *
  * Returns a [Disposable]
  */
-inline fun <S : Any> Store<S>.renderEmptyTask(crossinline dataTask: (S) -> EmptyDataTask?,
-                                              crossinline onIdle: () -> Unit,
-                                              crossinline onProgress: () -> Unit,
-                                              crossinline onSuccess: () -> Unit,
-                                              crossinline onError: (Throwable) -> Unit): Disposable {
-    return flowable()
-            .select(dataTask)
-            .subscribe {
-                when (it) {
-                    is EmptyDataTask.Idle -> onIdle()
-                    is EmptyDataTask.Running -> onProgress()
-                    is EmptyDataTask.Success -> onSuccess()
-                    is EmptyDataTask.Error -> onError(it.throwable)
-                }
-            }
+inline fun <S : Any> Store<S>.renderEmptyTask(
+  crossinline dataTask: (S) -> EmptyDataTask?,
+  crossinline onIdle: () -> Unit,
+  crossinline onProgress: () -> Unit,
+  crossinline onSuccess: () -> Unit,
+  crossinline onError: (Throwable) -> Unit
+): Disposable {
+  return flowable()
+      .select(dataTask)
+      .subscribe {
+        when (it) {
+          is EmptyDataTask.Idle -> onIdle()
+          is EmptyDataTask.Running -> onProgress()
+          is EmptyDataTask.Success -> onSuccess()
+          is EmptyDataTask.Error -> onError(it.throwable)
+        }
+      }
 }
 
 /**
@@ -97,17 +107,19 @@ inline fun <S : Any> Store<S>.renderEmptyTask(crossinline dataTask: (S) -> Empty
  *
  * Returns a [Disposable]
  */
-inline fun <S : Any> Store<S>.renderEmptyTaskList(crossinline dataTasks: (S) -> Iterable<EmptyDataTask>,
-                                                  crossinline onProgress: () -> Unit,
-                                                  crossinline onSuccess: (Iterable<EmptyDataTask>) -> Unit,
-                                                  crossinline onError: (Throwable) -> Unit): Disposable {
-    return flowable()
-            .select(dataTasks)
-            .subscribe {
-                when {
-                    it.allSuccessful() -> onSuccess(it)
-                    it.anyFailure() -> onError(it.firstFailure().throwable)
-                    it.anyRunning() -> onProgress()
-                }
-            }
+inline fun <S : Any> Store<S>.renderEmptyTaskList(
+  crossinline dataTasks: (S) -> Iterable<EmptyDataTask>,
+  crossinline onProgress: () -> Unit,
+  crossinline onSuccess: (Iterable<EmptyDataTask>) -> Unit,
+  crossinline onError: (Throwable) -> Unit
+): Disposable {
+  return flowable()
+      .select(dataTasks)
+      .subscribe {
+        when {
+          it.allSuccessful() -> onSuccess(it)
+          it.anyFailure() -> onError(it.firstFailure().throwable)
+          it.anyRunning() -> onProgress()
+        }
+      }
 }
