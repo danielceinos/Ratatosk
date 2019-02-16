@@ -3,7 +3,7 @@ package com.danielceinos.ratatosk
 import android.content.SharedPreferences
 import java.util.*
 
-class NearbyDB(private val sharedPreferences: SharedPreferences) {
+class RatatoskStorage(private val sharedPreferences: SharedPreferences) {
 
     private val UUID_KEY = "UUID_KEY"
 

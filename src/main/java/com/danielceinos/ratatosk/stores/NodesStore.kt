@@ -1,6 +1,10 @@
-package com.danielceinos.ratatosk
+package com.danielceinos.ratatosk.stores
 
 import com.danielceinos.nearbyconnect.extensions.replace
+import com.danielceinos.ratatosk.models.ConnectionStatus
+import com.danielceinos.ratatosk.models.EndpointId
+import com.danielceinos.ratatosk.models.Node
+import com.danielceinos.ratatosk.NodeId
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
 import mini.*
 
@@ -35,7 +39,8 @@ data class NodesState(
             name = nameMap[endpointId] ?: "Unknown",
             nodeId = nodeIdMap[endpointId] ?: "",
             inSight = inSightMap[endpointId] ?: false,
-            connectionStatus = connectionStatusMap[endpointId] ?: ConnectionStatus.DISCONNECTED,
+            connectionStatus = connectionStatusMap[endpointId]
+                ?: ConnectionStatus.DISCONNECTED,
             ping = pingMap[endpointId] ?: 0
         )
     }
@@ -75,7 +80,9 @@ class NodesStore : Store<NodesState>() {
             return state.copy(
                 nameMap = state.nameMap.replace(endpointId, discoveredEndpointInfo?.endpointName),
                 inSightMap = state.inSightMap.replace(endpointId, true),
-                connectionStatusMap = state.connectionStatusMap.replace(endpointId, ConnectionStatus.DISCONNECTED)
+                connectionStatusMap = state.connectionStatusMap.replace(endpointId,
+                    ConnectionStatus.DISCONNECTED
+                )
             )
         }
     }
@@ -85,7 +92,9 @@ class NodesStore : Store<NodesState>() {
         with(action.endpoint) {
             if (state.notContains(endpointId)) return state
             return state.copy(
-                connectionStatusMap = state.connectionStatusMap.replace(endpointId, ConnectionStatus.DISCONNECTED),
+                connectionStatusMap = state.connectionStatusMap.replace(endpointId,
+                    ConnectionStatus.DISCONNECTED
+                ),
                 inSightMap = state.inSightMap.replace(endpointId, false)
             )
         }
@@ -159,7 +168,9 @@ class NodesStore : Store<NodesState>() {
         if (state.notContains(action.endpointId)) return state
         return state.copy(
             nodeIdMap = state.nodeIdMap.replace(action.endpointId, action.uuid),
-            connectionStatusMap = state.connectionStatusMap.replace(action.endpointId, ConnectionStatus.CONNECTED)
+            connectionStatusMap = state.connectionStatusMap.replace(action.endpointId,
+                ConnectionStatus.CONNECTED
+            )
         )
     }
 }

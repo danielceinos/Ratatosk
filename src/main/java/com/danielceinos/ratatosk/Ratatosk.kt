@@ -3,8 +3,12 @@ package com.danielceinos.ratatosk
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
-import com.danielceinos.ratatosk.ConnectionStatus.CONNECTED
-import com.danielceinos.ratatosk.ConnectionStatus.DISCONNECTED
+import com.danielceinos.ratatosk.models.ConnectionStatus.CONNECTED
+import com.danielceinos.ratatosk.models.ConnectionStatus.DISCONNECTED
+import com.danielceinos.ratatosk.models.EndpointId
+import com.danielceinos.ratatosk.models.Node
+import com.danielceinos.ratatosk.models.PayloadReceived
+import com.danielceinos.ratatosk.stores.*
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
 import com.google.android.gms.nearby.connection.ConnectionsStatusCodes
 import com.google.android.gms.nearby.connection.Payload
@@ -42,7 +46,7 @@ data class PingState(val pingSended: Map<String, Long>) {
 }
 
 
-class NearbyConnect constructor(
+class Ratatosk constructor(
     private val context: Context,
     var name: String = "Poeta Halley",
     var serviceId: String = "default",
@@ -60,7 +64,7 @@ class NearbyConnect constructor(
     private var connecting = false
 
     private val gson = Gson()
-    private val uuid by lazy { NearbyDB(context.getSharedPreferences("NearbyConnection", 0)).getUUID() }
+    private val uuid by lazy { RatatoskStorage(context.getSharedPreferences("Ratatosk", 0)).getUUID() }
     private var autoDiscoveryHandler: Handler? = null
     private var pingHandler: Handler? = null
 
@@ -83,7 +87,7 @@ class NearbyConnect constructor(
     private val dispatcher: Dispatcher
 
     init {
-        Timber.i("Init NearbyConnect")
+        Timber.i("Init Ratatosk")
         rxNearby = RxNearbyConnections()
         rxNearby.stopAll(context)
 
@@ -248,14 +252,24 @@ class NearbyConnect constructor(
             rxNearby.requestConnection(context, endpointId, name)
                 .observeOn(Schedulers.io())
                 .subscribe({
-                    dispatcher.dispatch(RequestConnectionAction(endpointId, taskSuccess()))
+                    dispatcher.dispatch(
+                        RequestConnectionAction(
+                            endpointId,
+                            taskSuccess()
+                        )
+                    )
                     connecting = false
                     if (connectionQueue.isNotEmpty()) {
                         connectToEndpoint(connectionQueue.first())
                         connectionQueue.removeAt(0)
                     }
                 }, {
-                    dispatcher.dispatch(RequestConnectionAction(endpointId, taskFailure(it)))
+                    dispatcher.dispatch(
+                        RequestConnectionAction(
+                            endpointId,
+                            taskFailure(it)
+                        )
+                    )
                     connecting = false
                 })
         }
@@ -301,7 +315,12 @@ class NearbyConnect constructor(
                     .subscribe({ _ ->
                         dispatcher.dispatch(AcceptConnectionAction(it, taskSuccess()))
                     }, { error ->
-                        dispatcher.dispatch(AcceptConnectionAction(it, taskFailure(error)))
+                        dispatcher.dispatch(
+                            AcceptConnectionAction(
+                                it,
+                                taskFailure(error)
+                            )
+                        )
                     })
             }
 
@@ -311,17 +330,32 @@ class NearbyConnect constructor(
                 when (it.result.status.statusCode) {
                     ConnectionsStatusCodes.STATUS_OK -> {
                         Timber.d("STATUS_OK with ${it.endpointId}")
-                        dispatcher.dispatch(ConnectionResultAction(it.endpointId, taskSuccess()))
+                        dispatcher.dispatch(
+                            ConnectionResultAction(
+                                it.endpointId,
+                                taskSuccess()
+                            )
+                        )
                         stopDiscovering()
                         sendUUID(it.endpointId)
                     }
                     ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
                         Timber.d("STATUS_CONNECTION_REJECTED with ${it.endpointId}")
-                        dispatcher.dispatch(ConnectionResultAction(it.endpointId, taskFailure()))
+                        dispatcher.dispatch(
+                            ConnectionResultAction(
+                                it.endpointId,
+                                taskFailure()
+                            )
+                        )
                     }
                     ConnectionsStatusCodes.STATUS_ERROR -> {
                         Timber.d("STATUS_ERROR with ${it.endpointId}")
-                        dispatcher.dispatch(ConnectionResultAction(it.endpointId, taskFailure()))
+                        dispatcher.dispatch(
+                            ConnectionResultAction(
+                                it.endpointId,
+                                taskFailure()
+                            )
+                        )
                     }
                 }
             }
@@ -345,10 +379,20 @@ class NearbyConnect constructor(
                     payloadString.contains(UUID_CHANEL) -> {
                         val regex = "$UUID_CHANEL=([a-zA-Z0-9-]+)".toRegex().find(payloadString)
                         regex?.groups?.get(1)?.value?.let { uuidReceived ->
-                            dispatcher.dispatch(UUIDLoadedAction(it.endpointId, uuidReceived))
+                            dispatcher.dispatch(
+                                UUIDLoadedAction(
+                                    it.endpointId,
+                                    uuidReceived
+                                )
+                            )
                         }
                     }
-                    else -> dispatcher.dispatch(PayloadReceivedAction(it.payload, node = node))
+                    else -> dispatcher.dispatch(
+                        PayloadReceivedAction(
+                            it.payload,
+                            node = node
+                        )
+                    )
                 }
             }
     }

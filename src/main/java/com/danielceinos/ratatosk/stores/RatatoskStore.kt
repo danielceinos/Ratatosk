@@ -1,4 +1,4 @@
-package com.danielceinos.ratatosk
+package com.danielceinos.ratatosk.stores
 
 import mini.Action
 import mini.Reducer
@@ -17,7 +17,7 @@ data class RatatoskState(val advertising: Boolean, val discovering: Boolean)
 class RatatoskStore : Store<RatatoskState>() {
 
     @Reducer
-    fun onAvertising(action: AdvertisingAction): RatatoskState {
+    fun onAdvertising(action: AdvertisingAction): RatatoskState {
         return state.copy(advertising = action.advertising)
     }
 

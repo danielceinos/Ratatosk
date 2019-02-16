@@ -1,4 +1,6 @@
-package com.danielceinos.ratatosk
+package com.danielceinos.ratatosk.models
+
+import com.danielceinos.ratatosk.NodeId
 
 /**
  * Created by Daniel S on 11/11/2018.

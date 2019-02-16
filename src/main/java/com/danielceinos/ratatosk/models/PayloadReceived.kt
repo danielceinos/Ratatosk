@@ -1,5 +1,6 @@
-package com.danielceinos.ratatosk
+package com.danielceinos.ratatosk.models
 
+import com.danielceinos.ratatosk.models.Node
 import com.google.android.gms.nearby.connection.Payload
 
 /**

@@ -1,5 +1,7 @@
-package com.danielceinos.ratatosk
+package com.danielceinos.ratatosk.stores
 
+import com.danielceinos.ratatosk.models.Node
+import com.danielceinos.ratatosk.models.PayloadReceived
 import com.google.android.gms.nearby.connection.Payload
 import mini.Action
 import mini.Reducer
