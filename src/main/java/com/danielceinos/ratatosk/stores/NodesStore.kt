@@ -9,6 +9,7 @@ import com.danielceinos.ratatosk.models.Node
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections.ConnectionInitiated
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections.ConnectionResult
+import com.google.android.gms.nearby.connection.Payload
 import mini.*
 
 data class NodesState(
@@ -99,9 +100,9 @@ class NodesStore(val controller: NearbyController) : Store<NodesState>() {
                     connectionStatusMap = state.connectionStatusMap.replace(
                             endpointId,
                             when (action.task.status) {
-                                TaskStatus.SUCCESS -> ConnectionStatus.CONNECTING
+                                TaskStatus.SUCCESS -> ConnectionStatus.CONNECTED
                                 TaskStatus.ERROR -> ConnectionStatus.DISCONNECTED
-                                TaskStatus.IDLE, TaskStatus.RUNNING -> ConnectionStatus.CONNECTED
+                                TaskStatus.IDLE, TaskStatus.RUNNING -> ConnectionStatus.CONNECTING
                             }
                     ),
                     inSightMap = state.inSightMap.replace(endpointId, true)
@@ -172,6 +173,12 @@ class NodesStore(val controller: NearbyController) : Store<NodesState>() {
                 )
         )
     }
+
+    @Reducer
+    fun payloadReceived(action: OnPayloadReceivedAction): NodesState {
+        controller.payloadReceived(action.payload, state.nodeByEndpointId(action.endpointId))
+        return state
+    }
 }
 
 data class EndpointDiscoveredAction(val endpoint: RxNearbyConnections.Endpoint) : Action
@@ -182,5 +189,7 @@ data class AcceptConnectionAction(val connectionInitiated: ConnectionInitiated, 
 data class ConnectionResultAction(val connectionResult: ConnectionResult, val task: Task) : Action
 data class RequestConnectionAction(val endpointId: String, val task: Task) : Action
 data class UUIDLoadedAction(val endpointId: String, val uuid: String) : Action
+
+data class OnPayloadReceivedAction(val payload: Payload, val endpointId: EndpointId) : Action
 
 data class DisconnectAction(val node: Node) : Action

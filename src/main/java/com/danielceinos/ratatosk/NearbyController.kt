@@ -3,19 +3,22 @@ package com.danielceinos.ratatosk
 import android.annotation.SuppressLint
 import android.content.Context
 import com.danielceinos.ratatosk.models.EndpointId
+import com.danielceinos.ratatosk.models.Node
+import com.danielceinos.ratatosk.models.PayloadReceived
 import com.danielceinos.ratatosk.stores.*
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections.ConnectionInitiated
 import com.google.android.gms.nearby.connection.ConnectionsStatusCodes
 import com.google.android.gms.nearby.connection.Payload
 import com.google.android.gms.nearby.connection.Strategy
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import mini.Dispatcher
 import mini.taskFailure
 import mini.taskRunning
 import mini.taskSuccess
 import timber.log.Timber
+import java.sql.Timestamp
+import java.util.*
 
 /**
  * Created by Daniel S on 17/02/2019.
@@ -39,11 +42,9 @@ class NearbyController(val context: Context,
                 serviceId,
                 strategy)
                 .observeOn(Schedulers.io())
-                .subscribe({
+                .subscribe {
                     dispatcher.dispatchAsync(EnableDiscoveringCompleteAction(true))
-                }, {
-                    dispatcher.dispatchAsync(EnableDiscoveringCompleteAction(false))
-                })
+                }
     }
 
     fun stopDiscovering() {
@@ -57,11 +58,9 @@ class NearbyController(val context: Context,
                 serviceId,
                 strategy)
                 .observeOn(Schedulers.io())
-                .subscribe({
+                .subscribe {
                     dispatcher.dispatchAsync(EnableAdvertisingCompleteAction(true))
-                }, {
-                    dispatcher.dispatchAsync(EnableAdvertisingCompleteAction(false))
-                })
+                }
     }
 
     fun stopAdvertising() {
@@ -144,7 +143,7 @@ class NearbyController(val context: Context,
                 .observeOn(Schedulers.io())
                 .subscribe {
                     Timber.d("Connection initiated with ${it.endpointId}")
-                    dispatcher.dispatchAsync(AcceptConnectionAction(it, taskRunning()))
+                    dispatcher.dispatchAsync(OnConnectionInitializedAction(it))
                 }
 
         rxNearby.onConnectionResult
@@ -172,36 +171,29 @@ class NearbyController(val context: Context,
                     dispatcher.dispatchAsync(EndpointDisconnectedAction(it.endpointId))
                 }
 
-//        rxNearby.onPayloadReceived
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe {
-//                    if (it.payload.type != Payload.Type.BYTES) return@subscribe
-//                    val payloadString = String(it.payload.asBytes()!!)
-//                    Timber.d("Payload received from ${it.endpointId}")
-//                    Timber.d("Payload= $payloadString")
-//                    when {
-//                        payloadString == PING_CHANEL -> dispatcher.dispatch(SendPongAction(it.endpointId))
-//                        payloadString == PONG_CHANEL -> dispatcher.dispatch(PingReceivedAction(it.endpointId))
-//                        payloadString.contains(UUID_CHANEL) -> {
-//                            val regex = "$UUID_CHANEL=([a-zA-Z0-9-]+)".toRegex()
-//                                    .find(payloadString)
-//                            regex?.groups?.get(1)
-//                                    ?.value?.let { uuidReceived ->
-//                                dispatcher.dispatch(
-//                                        UUIDLoadedAction(
-//                                                it.endpointId,
-//                                                uuidReceived
-//                                        )
-//                                )
-//                            }
-//                        }
-//                        else -> dispatcher.dispatch(
-//                                PayloadReceivedAction(
-//                                        it.payload,
-//                                        node = node
-//                                )
-//                        )
-//                    }
-//                }
+        rxNearby.onPayloadReceived
+                .observeOn(Schedulers.io())
+                .subscribe {
+                    dispatcher.dispatch(OnPayloadReceivedAction(it.payload, it.endpointId))
+                }
+    }
+
+    fun payloadReceived(payload: Payload, node: Node) {
+        if (payload.type != Payload.Type.BYTES) return
+
+        val payloadString = String(payload.asBytes()!!)
+        Timber.d("Payload received from $node")
+        Timber.d("Payload= $payloadString")
+        when {
+            payloadString == PING_CHANEL -> dispatcher.dispatchAsync(PongReceivedAction(node))
+            payloadString == PONG_CHANEL -> dispatcher.dispatchAsync(PingReceivedAction(node))
+            payloadString.contains(UUID_CHANEL) -> {
+                val regex = "$UUID_CHANEL=([a-zA-Z0-9-]+)".toRegex().find(payloadString)
+                regex?.groups?.get(1)?.value?.let { uuidReceived ->
+                    dispatcher.dispatchAsync(UUIDLoadedAction(node.endpointId, uuidReceived))
+                }
+            }
+            else -> dispatcher.dispatchAsync(DataReceivedAction(PayloadReceived(payload, node, Timestamp(Date().time))))
+        }
     }
 }

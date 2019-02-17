@@ -3,6 +3,7 @@ package com.danielceinos.ratatosk.stores
 import com.danielceinos.ratatosk.NearbyController
 import com.danielceinos.ratatosk.RatatoskStorage
 import com.danielceinos.ratatosk.models.EndpointId
+import com.danielceinos.rxnearbyconnections.RxNearbyConnections
 import com.google.android.gms.nearby.connection.Strategy
 import mini.Action
 import mini.Reducer
@@ -16,7 +17,7 @@ data class RatatoskState(
         val discovering: Boolean = false,
         val name: String = "Poeta Halley",
         val uuid: String = "",
-        val autoDiscover: Boolean = false,
+        val autoDiscover: Boolean = true,
         val autoConnectOnDiscover: Boolean = false,
         val autoAcceptConnection: Boolean = true,
         val connecting: Boolean = false,
@@ -77,7 +78,7 @@ class RatatoskStore(private val controller: NearbyController,
 
     @Reducer
     fun endpointDiscovered(action: EndpointDiscoveredAction): RatatoskState {
-        if (state.autoConnectOnDiscover )
+        if (state.autoConnectOnDiscover)
             controller.requestConnection(action.endpoint.endpointId, state.name)
         return state
     }
@@ -89,8 +90,8 @@ class RatatoskStore(private val controller: NearbyController,
     }
 
     @Reducer
-    fun acceptConnection(action: AcceptConnectionAction): RatatoskState {
-        if (state.autoAcceptConnection && action.task.isRunning())
+    fun connectionInitialized(action: OnConnectionInitializedAction): RatatoskState {
+        if (state.autoAcceptConnection)
             controller.acceptConnection(action.connectionInitiated)
         return state
     }
@@ -134,3 +135,5 @@ class DisablePingAction : Action
 
 data class ChangeNameAction(val name: String) : Action
 data class EnableAutoDiscoverAction(val autoDiscover: Boolean) : Action
+
+data class OnConnectionInitializedAction(val connectionInitiated: RxNearbyConnections.ConnectionInitiated) : Action

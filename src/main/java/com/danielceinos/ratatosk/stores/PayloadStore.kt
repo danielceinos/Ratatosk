@@ -19,16 +19,8 @@ data class PayloadState(val payloads: List<PayloadReceived> = emptyList())
 class PayloadStore(val controller: NearbyController) : Store<PayloadState>() {
 
     @Reducer
-    fun onPayloadReceived(action: PayloadReceivedAction): PayloadState {
-        val list = state.payloads.toMutableList().apply {
-            add(PayloadReceived(
-                    payload = action.payload,
-                    timestamp = Timestamp(Date().time),
-                    readed = false,
-                    node = action.node)
-            )
-        }
-
+    fun onPayloadReceived(action: DataReceivedAction): PayloadState {
+        val list = state.payloads.toMutableList().apply { add(action.payload) }
         return state.copy(payloads = list)
     }
 
@@ -72,5 +64,5 @@ data class PayloadSendedAction(val payload: Payload, val endpointId: EndpointId)
 data class SendPayloadToAllAction(val payload: Payload, val nodes: List<Node>) : Action
 data class PayloadSendedToAllAction(val payload: Payload, val endpointIds: List<EndpointId>) : Action
 
-data class PayloadReceivedAction(val payload: Payload, val node: Node) : Action
+data class DataReceivedAction(val payload: PayloadReceived): Action
 data class MarkPayloadReadedAction(val payload: PayloadReceived) : Action
