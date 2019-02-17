@@ -10,16 +10,13 @@ data class Node(
     var nodeId: NodeId = "",
     var name: String = "Sr. X",
     var inSight: Boolean = false,
-    var connectionStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED,
-    var ping: Long = 0
+    var connectionStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED
 ) {
 
     override fun toString(): String {
         return "Id: $endpointId | nodeId: $nodeId | name: $name | inSight: $inSight " +
-                "| connection status: $connectionStatus | ping: $ping ms"
+                "| connection status: $connectionStatus"
     }
-
-    fun pingInMs() = "$ping ms"
 }
 
 enum class ConnectionStatus {

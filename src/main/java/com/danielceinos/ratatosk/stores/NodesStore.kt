@@ -53,8 +53,7 @@ data class NodesState(
             nodeId = nodeIdMap[endpointId] ?: "",
             inSight = inSightMap[endpointId] ?: false,
             connectionStatus = connectionStatusMap[endpointId]
-                ?: ConnectionStatus.DISCONNECTED,
-            ping = pingMap[endpointId] ?: 0
+                ?: ConnectionStatus.DISCONNECTED
         )
     }
 

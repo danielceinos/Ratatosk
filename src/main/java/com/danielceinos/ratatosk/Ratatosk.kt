@@ -6,7 +6,6 @@ import android.os.Handler
 import com.danielceinos.ratatosk.models.ConnectionStatus.CONNECTED
 import com.danielceinos.ratatosk.models.ConnectionStatus.DISCONNECTED
 import com.danielceinos.ratatosk.models.EndpointId
-import com.danielceinos.ratatosk.models.Node
 import com.danielceinos.ratatosk.models.PayloadReceived
 import com.danielceinos.ratatosk.stores.*
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
@@ -16,7 +15,6 @@ import com.google.android.gms.nearby.connection.Strategy
 import com.google.gson.Gson
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
 import mini.*
 import mini.log.LoggerInterceptor
 import timber.log.Timber
@@ -26,23 +24,6 @@ import timber.log.Timber
  */
 
 typealias NodeId = String
-
-data class PingState(val pingSended: Map<String, Long>) {
-
-    fun sendPing(endpointId: String): PingState {
-        val mutable = pingSended.toMutableMap()
-        mutable[endpointId] = System.currentTimeMillis()
-        return this.copy(pingSended = mutable)
-    }
-
-    fun pingReceived(node: Node): PingState {
-        node.ping = System.currentTimeMillis() - (pingSended[node.endpointId]
-            ?: System.currentTimeMillis())
-        val mutable = pingSended.toMutableMap()
-        mutable.remove(node.endpointId)
-        return this.copy(pingSended = mutable)
-    }
-}
 
 class Ratatosk constructor(
     private val context: Context,
@@ -70,21 +51,11 @@ class Ratatosk constructor(
     private var autoDiscoveryHandler: Handler? = null
     private var pingHandler: Handler? = null
 
-    private val pingStateSubject: PublishSubject<PingState> = PublishSubject.create()
-    private var _pingState: PingState = PingState(emptyMap())
-    var pingState: PingState
-        get() {
-            return _pingState
-        }
-        set(value) {
-            _pingState = value
-            pingStateSubject.onNext(value)
-        }
-
     private val rxNearby: RxNearbyConnections
     val nodesStore: NodesStore
     val payloadStore: PayloadStore
     val ratatoskStore: RatatoskStore
+    val pingStore: PingStore
 
     private val dispatcher: Dispatcher
 
@@ -96,11 +67,13 @@ class Ratatosk constructor(
         nodesStore = NodesStore()
         payloadStore = PayloadStore()
         ratatoskStore = RatatoskStore()
+        pingStore = PingStore()
 
         val stores = mapOf<Class<*>, Store<*>>(
             NodesStore::class.java to nodesStore,
             PayloadStore::class.java to payloadStore,
-            RatatoskStore::class.java to ratatoskStore
+            RatatoskStore::class.java to ratatoskStore,
+            PingStore::class.java to pingStore
         )
         val actionReducer = MiniActionReducer(stores = stores)
         val loggerInterceptor = LoggerInterceptor(stores.values)
@@ -113,7 +86,7 @@ class Ratatosk constructor(
 
         stopDiscovering()
         stopAdvertising()
-        observe()
+        observeNearbyConnection()
     }
 
     @SuppressLint("CheckResult")
@@ -158,10 +131,9 @@ class Ratatosk constructor(
         data: Any,
         cb: () -> Unit = {}
     ) {
-        nodesStore.state.endpointId(nodeId)
-            ?.let {
-                sendPayload(it, Payload.fromBytes(gson.toJson(data).toByteArray()), cb)
-            }
+        nodesStore.state.endpointId(nodeId)?.let {
+            sendPayload(it, Payload.fromBytes(gson.toJson(data).toByteArray()), cb)
+        }
     }
 
     fun sendToAllData(
@@ -244,7 +216,7 @@ class Ratatosk constructor(
     }
 
     private fun sendPing(endpointId: String) {
-        pingState = pingState.sendPing(endpointId)
+        dispatcher.dispatch(SendPingAction(endpointId))
         sendPayload(endpointId, Payload.fromBytes(PING_CHANEL.toByteArray()))
     }
 
@@ -308,7 +280,7 @@ class Ratatosk constructor(
     }
 
     @SuppressLint("CheckResult")
-    private fun observe() {
+    private fun observeNearbyConnection() {
         rxNearby.onEndpointDiscovered
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
@@ -387,13 +359,14 @@ class Ratatosk constructor(
         rxNearby.onPayloadReceived
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                val payloadString: String = it.payload.asBytes()?.let { String(it) } ?: return@subscribe
+                if (it.payload.type != Payload.Type.BYTES) return@subscribe
+                val payloadString = String(it.payload.asBytes()!!)
                 Timber.d("Payload received from ${it.endpointId}")
                 Timber.d("Payload= $payloadString")
                 val node = nodesStore.state.nodeByEndpointId(it.endpointId)
                 when {
                     payloadString == PING_CHANEL -> sendPong(it.endpointId)
-                    payloadString == PONG_CHANEL -> pingState = pingState.pingReceived(node)
+                    payloadString == PONG_CHANEL -> dispatcher.dispatch(PingReceivedAction(it.endpointId))
                     payloadString.contains(UUID_CHANEL) -> {
                         val regex = "$UUID_CHANEL=([a-zA-Z0-9-]+)".toRegex()
                             .find(payloadString)
@@ -420,6 +393,4 @@ class Ratatosk constructor(
     fun onDestroy() {
         rxNearby.stopAll(context)
     }
-
-    fun pingStateFlowable() = pingStateSubject
 }
