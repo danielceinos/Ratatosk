@@ -22,7 +22,8 @@ data class Node(
 enum class ConnectionStatus {
     CONNECTED,
     DISCONNECTED,
-    CONNECTING
+    CONNECTING,
+    DISCONNECTING
 }
 
 typealias EndpointId = String
