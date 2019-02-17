@@ -12,8 +12,8 @@ data class SendPingAction(val nodeId: NodeId) : Action
 data class PingReceivedAction(val nodeId: NodeId) : Action
 
 data class PingState(
-    val pings: Map<NodeId, Long>,
-    val pingsTasks: Map<NodeId, Task>
+    val pings: Map<NodeId, Long> = emptyMap(),
+    val pingsTasks: Map<NodeId, Task> = emptyMap()
 )
 
 class PingStore : Store<PingState>() {
