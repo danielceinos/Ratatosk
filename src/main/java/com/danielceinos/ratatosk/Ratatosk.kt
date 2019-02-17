@@ -30,7 +30,6 @@ class Ratatosk constructor(private val context: Context) {
 
     private val gson = Gson()
 
-
     private val rxNearby: RxNearbyConnections
     val nodesStore: NodesStore
     val payloadStore: PayloadStore
@@ -51,7 +50,7 @@ class Ratatosk constructor(private val context: Context) {
         nodesStore = NodesStore(nearbyController)
         payloadStore = PayloadStore(nearbyController)
         ratatoskStore = RatatoskStore(nearbyController, RatatoskStorage(context.getSharedPreferences("Ratatosk", 0)))
-        pingStore = PingStore()
+        pingStore = PingStore(nearbyController)
 
         val ratatoskController = RatatoskController(dispatcher, nodesStore, ratatoskStore)
 
@@ -63,7 +62,6 @@ class Ratatosk constructor(private val context: Context) {
         )
         val actionReducer = MiniActionReducer(stores = stores)
         val loggerInterceptor = LoggerInterceptor(stores.values)
-
 
         dispatcher.addActionReducer(actionReducer)
         dispatcher.addInterceptor(loggerInterceptor)

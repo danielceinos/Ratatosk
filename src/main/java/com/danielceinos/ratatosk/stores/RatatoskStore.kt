@@ -1,6 +1,5 @@
 package com.danielceinos.ratatosk.stores
 
-import com.danielceinos.ratatosk.NearbyController
 import com.danielceinos.ratatosk.RatatoskStorage
 import com.danielceinos.ratatosk.models.EndpointId
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
@@ -34,7 +33,8 @@ class RatatoskStore(private val controller: NearbyController,
 
     @Reducer
     fun enableAdvertising(action: StartAdvertisingAction): RatatoskState {
-        controller.startAdvertising(state.name, state.serviceId, state.strategy)
+        if (!state.advertising)
+            controller.startAdvertising(state.name, state.serviceId, state.strategy)
         return state
     }
 
@@ -51,7 +51,8 @@ class RatatoskStore(private val controller: NearbyController,
 
     @Reducer
     fun enableDiscovering(action: StartDiscoveringAction): RatatoskState {
-        controller.startDiscovering(state.serviceId, state.strategy)
+        if (!state.discovering)
+            controller.startDiscovering(state.serviceId, state.strategy)
         return state
     }
 

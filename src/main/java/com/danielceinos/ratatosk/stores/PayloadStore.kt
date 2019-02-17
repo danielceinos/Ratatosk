@@ -1,6 +1,5 @@
 package com.danielceinos.ratatosk.stores
 
-import com.danielceinos.ratatosk.NearbyController
 import com.danielceinos.ratatosk.models.EndpointId
 import com.danielceinos.ratatosk.models.Node
 import com.danielceinos.ratatosk.models.PayloadReceived
@@ -8,8 +7,6 @@ import com.google.android.gms.nearby.connection.Payload
 import mini.Action
 import mini.Reducer
 import mini.Store
-import java.sql.Timestamp
-import java.util.*
 
 /**
  * Created by Daniel S on 03/02/2019.

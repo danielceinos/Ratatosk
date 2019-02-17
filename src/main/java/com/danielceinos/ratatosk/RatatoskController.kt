@@ -21,7 +21,6 @@ class RatatoskController(val dispatcher: Dispatcher,
 
     private var autoDiscoveryHandler: Handler? = null
     private var pingHandler: Handler? = null
-//    private val connectionQueue = mutableSetOf<NodeId>()
 
     init {
         ratatoskStore.flowable()
@@ -37,15 +36,6 @@ class RatatoskController(val dispatcher: Dispatcher,
                     if (it) enablePing()
                     else disablePing()
                 }
-
-//        nodesStore.flowable()
-//                .select { it.connectionStatusMap }
-//                .subscribe {
-//                    if (connectionQueue.isNotEmpty()) {
-//                        connectToEndpoint(connectionQueue.first())
-//                        connectionQueue.removeAt(0)
-//                    }
-//                }
     }
 
     private fun enableAutoDiscover() {
@@ -92,15 +82,4 @@ class RatatoskController(val dispatcher: Dispatcher,
     private fun disablePing() {
         pingHandler?.removeCallbacksAndMessages(null)
     }
-
-//    fun connectToEndpoint(nodeId: NodeId) {
-//        if (ratatoskStore.state.connecting) {
-//            connectionQueue.add(nodeId)
-//            return
-//        }
-//
-//        if (nodesStore.state.node(nodeId)?.connectionStatus == ConnectionStatus.DISCONNECTED) {
-//            dispatcher.dispatch(RequestConnectionAction(endpointId, taskRunning()))
-//        }
-//    }
 }

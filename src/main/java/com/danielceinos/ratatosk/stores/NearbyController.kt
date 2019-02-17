@@ -1,11 +1,10 @@
-package com.danielceinos.ratatosk
+package com.danielceinos.ratatosk.stores
 
 import android.annotation.SuppressLint
 import android.content.Context
 import com.danielceinos.ratatosk.models.EndpointId
 import com.danielceinos.ratatosk.models.Node
 import com.danielceinos.ratatosk.models.PayloadReceived
-import com.danielceinos.ratatosk.stores.*
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections.ConnectionInitiated
 import com.google.android.gms.nearby.connection.ConnectionsStatusCodes
@@ -75,18 +74,22 @@ class NearbyController(val context: Context,
     fun sendPayload(endpointId: EndpointId, payload: Payload) {
         rxNearby.sendPayload(context, endpointId, payload)
                 .observeOn(Schedulers.computation())
-                .subscribe {
+                .subscribe ({
                     dispatcher.dispatchAsync(PayloadSendedAction(payload, endpointId))
-                }
+                },{
+
+                })
     }
 
     @SuppressLint("CheckResult")
     fun senToAllPayload(endpointIds: List<EndpointId>, payload: Payload) {
         rxNearby.sendPayload(context, endpointIds, payload)
                 .observeOn(Schedulers.computation())
-                .subscribe {
+                .subscribe ({
                     dispatcher.dispatchAsync(PayloadSendedToAllAction(payload, endpointIds))
-                }
+                },{
+
+                })
     }
 
     @SuppressLint("CheckResult")
