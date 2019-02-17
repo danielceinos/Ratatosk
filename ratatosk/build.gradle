@@ -35,6 +35,7 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:support-annotations:28.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.github.danielceinos:RxNearbyConnections:0.0.2'
@@ -47,7 +48,7 @@ dependencies {
     /** MINI **/
     implementation 'com.github.pabloogc:Mini:1.1.0'
     kapt 'com.github.pabloogc.Mini:mini-processor:1.1.0'
-    
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
