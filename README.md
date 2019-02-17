@@ -1,4 +1,3 @@
-# Ratatosk 🐿️
 
 >_"Ratatosk is the squirrel who there shall run  
 On the ash-tree Yggdrasil;  
@@ -7,5 +6,31 @@ And tells them to Nithhogg beneath."_
 
 
 ---
+
+# Ratatosk 🐿️
+
+Ratatosk it's a wrapper around [Google's Nearby-Connections API](https://developers.google.com/nearby/connections/overview)
+
+## Download
+
+##### Gradle:
+
+[![](https://jitpack.io/v/danielceinos/RxNearbyConnections.svg)](https://jitpack.io/#danielceinos/RxNearbyConnections)
+
+```groovy
+allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+}
+
+... 
+
+dependencies {
+	        implementation 'com.github.danielceinos:Ratatosk:Tag'
+}
+```
+
 
 # WIP 💥💻🐿️
