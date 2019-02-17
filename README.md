@@ -15,7 +15,8 @@ Ratatosk it's a wrapper around [Google's Nearby-Connections API](https://develop
 
 ##### Gradle:
 
-[![](https://jitpack.io/v/danielceinos/RxNearbyConnections.svg)](https://jitpack.io/#danielceinos/RxNearbyConnections)
+[![](https://jitpack.io/v/danielceinos/Ratatosk.svg)](https://jitpack.io/#danielceinos/Ratatosk)
+
 
 ```groovy
 allprojects {
