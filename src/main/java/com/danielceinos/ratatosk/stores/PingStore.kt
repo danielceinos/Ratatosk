@@ -13,6 +13,7 @@ data class PingReceivedAction(val nodeId: NodeId) : Action
 
 data class PingState(
     val pings: Map<NodeId, Long> = emptyMap(),
+    val pingsSended: Map<NodeId, Long> = emptyMap(),
     val pingsTasks: Map<NodeId, Task> = emptyMap()
 )
 
@@ -21,16 +22,18 @@ class PingStore : Store<PingState>() {
     @Reducer
     fun sendPing(action: SendPingAction): PingState {
         if (state.pingsTasks[action.nodeId]?.isRunning() == true) return state
-        return state.copy(pingsTasks = state.pingsTasks.replace(action.nodeId, taskRunning()))
+        return state.copy(
+            pingsSended = state.pingsSended.replace(action.nodeId, System.currentTimeMillis()),
+            pingsTasks = state.pingsTasks.replace(action.nodeId, taskRunning())
+        )
     }
 
     @Reducer
     fun pingReceived(action: PingReceivedAction): PingState {
         return state.copy(
-            pings =
-            state.pings.replace(
+            pings = state.pings.replace(
                 action.nodeId,
-                System.currentTimeMillis() - (state.pings[action.nodeId] ?: System.currentTimeMillis())
+                System.currentTimeMillis() - (state.pingsSended[action.nodeId] ?: System.currentTimeMillis())
             ),
             pingsTasks = state.pingsTasks.replace(action.nodeId, taskSuccess())
         )

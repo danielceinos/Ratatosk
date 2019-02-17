@@ -16,6 +16,8 @@ import com.google.gson.Gson
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import mini.*
+import mini.log.DebugTree
+import mini.log.Grove
 import mini.log.LoggerInterceptor
 import timber.log.Timber
 
@@ -37,7 +39,7 @@ class Ratatosk constructor(
     private val PONG_CHANEL = "PONG_CHANEL"
     private val UUID_CHANEL = "UUID_CHANEL"
 
-    private val PING_TIME = 1000L
+    private val PING_TIME = 5000L
 
     private val connectionQueue = mutableListOf<String>()
     private var connecting = false
@@ -60,6 +62,8 @@ class Ratatosk constructor(
     private val dispatcher: Dispatcher
 
     init {
+        Grove.plant(DebugTree())
+        Timber.plant(Timber.DebugTree())
         Timber.i("Init Ratatosk")
         rxNearby = RxNearbyConnections()
         rxNearby.stopAll(context)
@@ -206,6 +210,7 @@ class Ratatosk constructor(
                         .filter { it.value == CONNECTED }
                         .forEach {
                             Timber.i("Pinging...")
+                            nodesStore.state.nodeByEndpointId(it.key)
                             sendPing(it.key)
                         }
                     pingHandler?.postDelayed(this, PING_TIME)
@@ -366,7 +371,7 @@ class Ratatosk constructor(
                 val node = nodesStore.state.nodeByEndpointId(it.endpointId)
                 when {
                     payloadString == PING_CHANEL -> sendPong(it.endpointId)
-                    payloadString == PONG_CHANEL -> dispatcher.dispatch(PingReceivedAction(it.endpointId))
+                    payloadString == PONG_CHANEL -> dispatcher.dispatch(PingReceivedAction(node.nodeId))
                     payloadString.contains(UUID_CHANEL) -> {
                         val regex = "$UUID_CHANEL=([a-zA-Z0-9-]+)".toRegex()
                             .find(payloadString)
