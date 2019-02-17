@@ -11,6 +11,8 @@ And tells them to Nithhogg beneath."_
 
 Ratatosk it's a wrapper around [Google's Nearby-Connections API](https://developers.google.com/nearby/connections/overview)
 
+[![CircleCI](https://circleci.com/gh/danielceinos/Ratatosk/tree/develop.svg?style=svg)](https://circleci.com/gh/danielceinos/Ratatosk/tree/develop)
+
 ## Download
 
 ##### Gradle:
