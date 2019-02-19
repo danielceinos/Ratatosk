@@ -11,10 +11,7 @@ import com.danielceinos.ratatosk.stores.*
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
 import com.google.android.gms.nearby.connection.Payload
 import com.google.gson.Gson
-import mini.Dispatcher
-import mini.MiniActionReducer
-import mini.Store
-import mini.initStores
+import mini.*
 import mini.log.DebugTree
 import mini.log.Grove
 import mini.log.LoggerInterceptor
@@ -31,10 +28,10 @@ class Ratatosk constructor(private val context: Context) {
     private val gson = Gson()
 
     private val rxNearby: RxNearbyConnections
-    val nodesStore: NodesStore
-    val payloadStore: PayloadStore
-    val ratatoskStore: RatatoskStore
-    val pingStore: PingStore
+    private val nodesStore: NodesStore
+    private val payloadStore: PayloadStore
+    private val ratatoskStore: RatatoskStore
+    private val pingStore: PingStore
 
     private val dispatcher: Dispatcher
 
@@ -55,10 +52,10 @@ class Ratatosk constructor(private val context: Context) {
         val ratatoskController = RatatoskController(dispatcher, nodesStore, ratatoskStore)
 
         val stores = mapOf<Class<*>, Store<*>>(
-                NodesStore::class.java to nodesStore,
-                PayloadStore::class.java to payloadStore,
-                RatatoskStore::class.java to ratatoskStore,
-                PingStore::class.java to pingStore
+            NodesStore::class.java to nodesStore,
+            PayloadStore::class.java to payloadStore,
+            RatatoskStore::class.java to ratatoskStore,
+            PingStore::class.java to pingStore
         )
         val actionReducer = MiniActionReducer(stores = stores)
         val loggerInterceptor = LoggerInterceptor(stores.values)
@@ -131,4 +128,20 @@ class Ratatosk constructor(private val context: Context) {
     fun onDestroy() {
         rxNearby.stopAll(context)
     }
+
+    fun getNodesFlowable() = nodesStore.flowable().select { it.getNodes() }
+
+    fun getRatatoskStateFlowable() = ratatoskStore.flowable()
+
+    fun getPayloadsFlowable() = payloadStore.flowable().select { it.payloads }
+
+    fun getPingsFlowable() = pingStore.flowable().select { it.pings }
+
+    fun getNodes() = nodesStore.flowable().select { it.getNodes() }
+
+    fun getRatatoskState() = ratatoskStore.state
+
+    fun getPayloads() = payloadStore.state.payloads
+
+    fun getPings() = pingStore.state.pings
 }

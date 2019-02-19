@@ -5,12 +5,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.danielceinos.ratatosk.Ratatosk
-import com.danielceinos.ratatosk.extensions.select
 import com.danielceinos.sample.databinding.ActivityMainBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import mini.mapNotNull
-import mini.select
-import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,14 +29,13 @@ class MainActivity : AppCompatActivity() {
         }
         binding.nodessRv.adapter = nodesAdapter
 
-        ratatosk.nodesStore.flowable()
-            .select { it.getNodes() }
+        ratatosk.getNodesFlowable()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                nodesAdapter.setNodes(ratatosk.nodesStore.state.getNodes())
+                nodesAdapter.setNodes(it)
             }
 
-        ratatosk.ratatoskStore.flowable()
+        ratatosk.getRatatoskStateFlowable()
             .mapNotNull { it.advertising }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { advertising ->
@@ -53,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        ratatosk.ratatoskStore.flowable()
+        ratatosk.getRatatoskStateFlowable()
             .mapNotNull { it.discovering }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { discovering ->
@@ -67,8 +63,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        ratatosk.pingStore.flowable()
-            .select { it.pings }
+        ratatosk.getPingsFlowable()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 nodesAdapter.setPings(it)
