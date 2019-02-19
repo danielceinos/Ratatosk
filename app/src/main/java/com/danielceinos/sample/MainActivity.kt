@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        ratatosk.getPings()
+        ratatosk.getPingsFlowable()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 nodesAdapter.setPings(it)
