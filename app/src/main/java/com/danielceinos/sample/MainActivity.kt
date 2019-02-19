@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
                     true -> "Stop Discovering"
                     false -> "Discover"
                 }
+
                 when (discovering) {
                     true -> binding.discoveringB.setOnClickListener { ratatosk.stopDiscovering() }
                     false -> binding.discoveringB.setOnClickListener { ratatosk.startDiscovering() }
