@@ -32,14 +32,13 @@ class MainActivity : AppCompatActivity() {
         }
         binding.nodessRv.adapter = nodesAdapter
 
-        ratatosk.nodesStore.flowable()
-            .select { it.getNodes() }
+        ratatosk.getNodes()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                nodesAdapter.setNodes(ratatosk.nodesStore.state.getNodes())
+                nodesAdapter.setNodes(it)
             }
 
-        ratatosk.ratatoskStore.flowable()
+        ratatosk.getRatatoskState()
             .mapNotNull { it.advertising }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { advertising ->
@@ -53,7 +52,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        ratatosk.ratatoskStore.flowable()
+        ratatosk.getRatatoskState()
             .mapNotNull { it.discovering }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { discovering ->
@@ -67,8 +66,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        ratatosk.pingStore.flowable()
-            .select { it.pings }
+        ratatosk.getPings()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 nodesAdapter.setPings(it)
