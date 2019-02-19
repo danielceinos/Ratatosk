@@ -129,11 +129,19 @@ class Ratatosk constructor(private val context: Context) {
         rxNearby.stopAll(context)
     }
 
+    fun getNodesFlowable() = nodesStore.flowable().select { it.getNodes() }
+
+    fun getRatatoskStateFlowable() = ratatoskStore.flowable()
+
+    fun getPayloadsFlowable() = payloadStore.flowable().select { it.payloads }
+
+    fun getPingsFlowable() = pingStore.flowable().select { it.pings }
+
     fun getNodes() = nodesStore.flowable().select { it.getNodes() }
 
-    fun getRatatoskState() = ratatoskStore.flowable()
+    fun getRatatoskState() = ratatoskStore.state
 
-    fun getPayloads() = payloadStore.flowable().select { it.payloads }
+    fun getPayloads() = payloadStore.state.payloads
 
-    fun getPings() = pingStore.flowable().select { it.pings }
+    fun getPings() = pingStore.state.pings
 }

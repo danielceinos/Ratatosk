@@ -5,12 +5,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.danielceinos.ratatosk.Ratatosk
-import com.danielceinos.ratatosk.extensions.select
 import com.danielceinos.sample.databinding.ActivityMainBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import mini.mapNotNull
-import mini.select
-import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,13 +29,13 @@ class MainActivity : AppCompatActivity() {
         }
         binding.nodessRv.adapter = nodesAdapter
 
-        ratatosk.getNodes()
+        ratatosk.getNodesFlowable()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 nodesAdapter.setNodes(it)
             }
 
-        ratatosk.getRatatoskState()
+        ratatosk.getRatatoskStateFlowable()
             .mapNotNull { it.advertising }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { advertising ->
@@ -52,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        ratatosk.getRatatoskState()
+        ratatosk.getRatatoskStateFlowable()
             .mapNotNull { it.discovering }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { discovering ->
