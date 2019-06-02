@@ -78,6 +78,11 @@ class RatatoskStore(private val controller: NearbyController,
     }
 
     @Reducer
+    fun enableAutoConnect(action: EnableAutoConnectAction): RatatoskState {
+        return state.copy(autoConnectOnDiscover = action.autoConnect)
+    }
+
+    @Reducer
     fun endpointDiscovered(action: EndpointDiscoveredAction): RatatoskState {
         if (state.autoConnectOnDiscover)
             controller.requestConnection(action.endpoint.endpointId, state.name)
@@ -136,5 +141,6 @@ class DisablePingAction : Action
 
 data class ChangeNameAction(val name: String) : Action
 data class EnableAutoDiscoverAction(val autoDiscover: Boolean) : Action
+data class EnableAutoConnectAction(val autoConnect: Boolean) : Action
 
 data class OnConnectionInitializedAction(val connectionInitiated: RxNearbyConnections.ConnectionInitiated) : Action

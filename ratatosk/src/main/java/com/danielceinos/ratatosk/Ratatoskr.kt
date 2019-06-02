@@ -113,6 +113,14 @@ class Ratatoskr constructor(private val context: Context) {
         dispatcher.dispatch(EnableAutoDiscoverAction(false))
     }
 
+    fun enableAutoConnect() {
+        dispatcher.dispatch(EnableAutoDiscoverAction(true))
+    }
+
+    fun disableAutoConnect() {
+        dispatcher.dispatch(EnableAutoDiscoverAction(false))
+    }
+
     fun enablePing() {
         dispatcher.dispatch(EnablePingAction())
     }
