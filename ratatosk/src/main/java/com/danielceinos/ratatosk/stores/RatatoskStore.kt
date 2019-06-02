@@ -1,5 +1,6 @@
 package com.danielceinos.ratatosk.stores
 
+import com.danielceinos.ratatosk.NearbyController
 import com.danielceinos.ratatosk.RatatoskStorage
 import com.danielceinos.ratatosk.models.EndpointId
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
@@ -17,7 +18,7 @@ data class RatatoskState(
         val name: String = "Poeta Halley",
         val uuid: String = "",
         val autoDiscover: Boolean = true,
-        val autoConnectOnDiscover: Boolean = false,
+        val autoConnectOnDiscover: Boolean = true,
         val autoAcceptConnection: Boolean = true,
         val connecting: Boolean = false,
         val ping: Boolean = false,
@@ -75,6 +76,11 @@ class RatatoskStore(private val controller: NearbyController,
     @Reducer
     fun enableAutoDiscover(action: EnableAutoDiscoverAction): RatatoskState {
         return state.copy(autoDiscover = action.autoDiscover)
+    }
+
+    @Reducer
+    fun enableAutoConnect(action: EnableAutoConnectAction): RatatoskState {
+        return state.copy(autoConnectOnDiscover = action.autoConnect)
     }
 
     @Reducer
@@ -136,5 +142,6 @@ class DisablePingAction : Action
 
 data class ChangeNameAction(val name: String) : Action
 data class EnableAutoDiscoverAction(val autoDiscover: Boolean) : Action
+data class EnableAutoConnectAction(val autoConnect: Boolean) : Action
 
 data class OnConnectionInitializedAction(val connectionInitiated: RxNearbyConnections.ConnectionInitiated) : Action

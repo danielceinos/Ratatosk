@@ -1,5 +1,6 @@
 package com.danielceinos.ratatosk.stores
 
+import com.danielceinos.ratatosk.NearbyController
 import com.danielceinos.ratatosk.models.EndpointId
 import com.danielceinos.ratatosk.models.Node
 import com.danielceinos.ratatosk.models.PayloadReceived

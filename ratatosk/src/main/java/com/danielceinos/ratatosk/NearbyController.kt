@@ -1,10 +1,11 @@
-package com.danielceinos.ratatosk.stores
+package com.danielceinos.ratatosk
 
 import android.annotation.SuppressLint
 import android.content.Context
 import com.danielceinos.ratatosk.models.EndpointId
 import com.danielceinos.ratatosk.models.Node
 import com.danielceinos.ratatosk.models.PayloadReceived
+import com.danielceinos.ratatosk.stores.*
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections
 import com.danielceinos.rxnearbyconnections.RxNearbyConnections.ConnectionInitiated
 import com.google.android.gms.nearby.connection.ConnectionsStatusCodes
@@ -41,9 +42,11 @@ class NearbyController(val context: Context,
                 serviceId,
                 strategy)
                 .observeOn(Schedulers.io())
-                .subscribe {
+                .subscribe ({
                     dispatcher.dispatchAsync(EnableDiscoveringCompleteAction(true))
-                }
+                },{
+                   Timber.e("startDiscovering error = $it")
+                })
     }
 
     fun stopDiscovering() {
@@ -52,14 +55,17 @@ class NearbyController(val context: Context,
 
     @SuppressLint("CheckResult")
     fun startAdvertising(name: String, serviceId: String, strategy: Strategy) {
+        Timber.i("startAdvertising")
         rxNearby.startAdvertising(context,
                 name,
                 serviceId,
                 strategy)
                 .observeOn(Schedulers.io())
-                .subscribe {
+                .subscribe ({
                     dispatcher.dispatchAsync(EnableAdvertisingCompleteAction(true))
-                }
+                },{
+                    Timber.e("startAdvertising error = $it")
+                })
     }
 
     fun stopAdvertising() {
@@ -77,7 +83,7 @@ class NearbyController(val context: Context,
                 .subscribe ({
                     dispatcher.dispatchAsync(PayloadSendedAction(payload, endpointId))
                 },{
-
+                    Timber.e("sendPayload error = $it")
                 })
     }
 
@@ -86,9 +92,14 @@ class NearbyController(val context: Context,
         rxNearby.sendPayload(context, endpointIds, payload)
                 .observeOn(Schedulers.computation())
                 .subscribe ({
-                    dispatcher.dispatchAsync(PayloadSendedToAllAction(payload, endpointIds))
+                    dispatcher.dispatchAsync(
+                        PayloadSendedToAllAction(
+                            payload,
+                            endpointIds
+                        )
+                    )
                 },{
-
+                    Timber.e("senToAllPayload error = $it")
                 })
     }
 
@@ -98,21 +109,46 @@ class NearbyController(val context: Context,
         rxNearby.requestConnection(context, endpointId, name)
                 .observeOn(Schedulers.io())
                 .subscribe({
-                    dispatcher.dispatchAsync(RequestConnectionAction(endpointId, taskSuccess()))
+                    dispatcher.dispatchAsync(
+                        RequestConnectionAction(
+                            endpointId,
+                            taskSuccess()
+                        )
+                    )
                 }, {
-                    dispatcher.dispatchAsync(RequestConnectionAction(endpointId, taskFailure(it)))
+                    dispatcher.dispatchAsync(
+                        RequestConnectionAction(
+                            endpointId,
+                            taskFailure(it)
+                        )
+                    )
                 })
     }
 
     @SuppressLint("CheckResult")
     fun acceptConnection(connectionInitiated: ConnectionInitiated) {
-        dispatcher.dispatchAsync(AcceptConnectionAction(connectionInitiated, taskRunning()))
+        dispatcher.dispatchAsync(
+            AcceptConnectionAction(
+                connectionInitiated,
+                taskRunning()
+            )
+        )
         rxNearby.acceptConnection(context, connectionInitiated.endpointId)
                 .observeOn(Schedulers.io())
                 .subscribe({
-                    dispatcher.dispatchAsync(AcceptConnectionAction(connectionInitiated, taskSuccess()))
+                    dispatcher.dispatchAsync(
+                        AcceptConnectionAction(
+                            connectionInitiated,
+                            taskSuccess()
+                        )
+                    )
                 }, { error ->
-                    dispatcher.dispatchAsync(AcceptConnectionAction(connectionInitiated, taskFailure(error)))
+                    dispatcher.dispatchAsync(
+                        AcceptConnectionAction(
+                            connectionInitiated,
+                            taskFailure(error)
+                        )
+                    )
                 })
     }
 
@@ -155,15 +191,30 @@ class NearbyController(val context: Context,
                     when (it.result.status.statusCode) {
                         ConnectionsStatusCodes.STATUS_OK -> {
                             Timber.d("STATUS_OK with ${it.endpointId}")
-                            dispatcher.dispatchAsync(ConnectionResultAction(it, taskSuccess()))
+                            dispatcher.dispatchAsync(
+                                ConnectionResultAction(
+                                    it,
+                                    taskSuccess()
+                                )
+                            )
                         }
                         ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
                             Timber.d("STATUS_CONNECTION_REJECTED with ${it.endpointId}")
-                            dispatcher.dispatchAsync(ConnectionResultAction(it, taskFailure()))
+                            dispatcher.dispatchAsync(
+                                ConnectionResultAction(
+                                    it,
+                                    taskFailure()
+                                )
+                            )
                         }
                         ConnectionsStatusCodes.STATUS_ERROR -> {
                             Timber.d("STATUS_ERROR with ${it.endpointId}")
-                            dispatcher.dispatchAsync(ConnectionResultAction(it, taskFailure()))
+                            dispatcher.dispatchAsync(
+                                ConnectionResultAction(
+                                    it,
+                                    taskFailure()
+                                )
+                            )
                         }
                     }
                 }
@@ -177,7 +228,12 @@ class NearbyController(val context: Context,
         rxNearby.onPayloadReceived
                 .observeOn(Schedulers.io())
                 .subscribe {
-                    dispatcher.dispatch(OnPayloadReceivedAction(it.payload, it.endpointId))
+                    dispatcher.dispatch(
+                        OnPayloadReceivedAction(
+                            it.payload,
+                            it.endpointId
+                        )
+                    )
                 }
     }
 
@@ -188,15 +244,36 @@ class NearbyController(val context: Context,
         Timber.d("Payload received from $node")
         Timber.d("Payload= $payloadString")
         when {
-            payloadString == PING_CHANEL -> dispatcher.dispatchAsync(PongReceivedAction(node))
-            payloadString == PONG_CHANEL -> dispatcher.dispatchAsync(PingReceivedAction(node))
+            payloadString == PING_CHANEL -> dispatcher.dispatchAsync(
+                PongReceivedAction(
+                    node
+                )
+            )
+            payloadString == PONG_CHANEL -> dispatcher.dispatchAsync(
+                PingReceivedAction(
+                    node
+                )
+            )
             payloadString.contains(UUID_CHANEL) -> {
                 val regex = "$UUID_CHANEL=([a-zA-Z0-9-]+)".toRegex().find(payloadString)
                 regex?.groups?.get(1)?.value?.let { uuidReceived ->
-                    dispatcher.dispatchAsync(UUIDLoadedAction(node.endpointId, uuidReceived))
+                    dispatcher.dispatchAsync(
+                        UUIDLoadedAction(
+                            node.endpointId,
+                            uuidReceived
+                        )
+                    )
                 }
             }
-            else -> dispatcher.dispatchAsync(DataReceivedAction(PayloadReceived(payload, node, Timestamp(Date().time))))
+            else -> dispatcher.dispatchAsync(
+                DataReceivedAction(
+                    PayloadReceived(
+                        payloadString,
+                        node,
+                        Timestamp(Date().time)
+                    )
+                )
+            )
         }
     }
 }

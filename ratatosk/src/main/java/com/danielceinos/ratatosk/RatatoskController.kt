@@ -52,7 +52,7 @@ class RatatoskController(val dispatcher: Dispatcher,
                     autoDiscoveryHandler?.postDelayed(this, 10000)
                 }
             }
-            autoDiscoveryHandler?.postDelayed(runnable, 1000)
+            autoDiscoveryHandler?.postDelayed(runnable, 5000)
         }
     }
 
