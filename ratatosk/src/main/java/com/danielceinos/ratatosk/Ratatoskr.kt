@@ -23,7 +23,7 @@ import timber.log.Timber
 
 typealias NodeId = String
 
-class Ratatosk constructor(private val context: Context) {
+class Ratatoskr constructor(private val context: Context) {
 
     private val gson = Gson()
 
@@ -38,7 +38,7 @@ class Ratatosk constructor(private val context: Context) {
     init {
         Grove.plant(DebugTree())
         Timber.plant(Timber.DebugTree())
-        Timber.i("Init Ratatosk")
+        Timber.i("Init Ratatoskr")
         rxNearby = RxNearbyConnections()
         rxNearby.stopAll(context)
         dispatcher = Dispatcher()
@@ -46,7 +46,7 @@ class Ratatosk constructor(private val context: Context) {
         val nearbyController = NearbyController(context, rxNearby, dispatcher)
         nodesStore = NodesStore(nearbyController)
         payloadStore = PayloadStore(nearbyController)
-        ratatoskStore = RatatoskStore(nearbyController, RatatoskStorage(context.getSharedPreferences("Ratatosk", 0)))
+        ratatoskStore = RatatoskStore(nearbyController, RatatoskStorage(context.getSharedPreferences("Ratatoskr", 0)))
         pingStore = PingStore(nearbyController)
 
         val ratatoskController = RatatoskController(dispatcher, nodesStore, ratatoskStore)
@@ -137,7 +137,7 @@ class Ratatosk constructor(private val context: Context) {
 
     fun getPingsFlowable() = pingStore.flowable().select { it.pings }
 
-    fun getNodes() = nodesStore.flowable().select { it.getNodes() }
+    fun getNodes() = nodesStore.state.getNodes()
 
     fun getRatatoskState() = ratatoskStore.state
 

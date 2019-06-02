@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.danielceinos.ratatosk.Ratatosk
+import com.danielceinos.ratatosk.Ratatoskr
 import com.danielceinos.sample.databinding.ActivityMainBinding
 import io.reactivex.android.schedulers.AndroidSchedulers
 import mini.mapNotNull
@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var nodesAdapter: NodesAdapter
     private val ratatosk by lazy {
-        Ratatosk(this)
+        Ratatoskr(this)
     }
 
     @SuppressLint("CheckResult")

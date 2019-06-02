@@ -17,7 +17,7 @@ data class RatatoskState(
         val name: String = "Poeta Halley",
         val uuid: String = "",
         val autoDiscover: Boolean = true,
-        val autoConnectOnDiscover: Boolean = false,
+        val autoConnectOnDiscover: Boolean = true,
         val autoAcceptConnection: Boolean = true,
         val connecting: Boolean = false,
         val ping: Boolean = false,
