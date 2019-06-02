@@ -1,5 +1,6 @@
 package com.danielceinos.ratatosk.stores
 
+import com.danielceinos.ratatosk.NearbyController
 import com.danielceinos.ratatosk.NodeId
 import com.danielceinos.ratatosk.extensions.replace
 import com.danielceinos.ratatosk.models.Node
