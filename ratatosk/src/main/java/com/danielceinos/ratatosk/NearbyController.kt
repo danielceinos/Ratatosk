@@ -268,7 +268,7 @@ class NearbyController(val context: Context,
             else -> dispatcher.dispatchAsync(
                 DataReceivedAction(
                     PayloadReceived(
-                        payload,
+                        payloadString,
                         node,
                         Timestamp(Date().time)
                     )

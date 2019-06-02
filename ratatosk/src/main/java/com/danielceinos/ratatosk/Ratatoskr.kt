@@ -49,7 +49,7 @@ class Ratatoskr constructor(private val context: Context) {
         ratatoskStore = RatatoskStore(nearbyController, RatatoskStorage(context.getSharedPreferences("Ratatoskr", 0)))
         pingStore = PingStore(nearbyController)
 
-        val ratatoskController = RatatoskController(dispatcher, nodesStore, ratatoskStore)
+        RatatoskController(dispatcher, nodesStore, ratatoskStore)
 
         val stores = mapOf<Class<*>, Store<*>>(
             NodesStore::class.java to nodesStore,
@@ -67,6 +67,11 @@ class Ratatoskr constructor(private val context: Context) {
 
         stopDiscovering()
         stopAdvertising()
+    }
+
+    @SuppressLint("CheckResult")
+    fun setName(name: String) {
+        dispatcher.dispatch(ChangeNameAction(name))
     }
 
     @SuppressLint("CheckResult")
